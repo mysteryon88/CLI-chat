@@ -1,4 +1,4 @@
-# CLI_Chat
+# CLI-chat
 
 Операционная система: Oracle Linux Server Release 6.10
 
