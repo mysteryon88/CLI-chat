@@ -9,7 +9,7 @@
 #include "database.h"
 #include "list.h"
 
-#define PORT      2325
+#define PORT      2343
 #define MSG_LEN   100
 #define COM_LEN	  9
 #define CODE_LEN  5

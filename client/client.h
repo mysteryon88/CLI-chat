@@ -9,7 +9,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#define PORT      2325
+#define PORT      2343
 #define MSG_LEN   100
 #define LEN_20    20
 #define COM_LEN	  9
@@ -17,7 +17,6 @@
 #define TRUE	  1
 
 char nickname[LEN_20];
-char msg[MSG_LEN];
 int sock = 0;
 
 void *recvmg(void *my_sock);

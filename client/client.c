@@ -12,7 +12,7 @@ int main(int argc, char *argv[])
 
 	pthread_t recvt;
     	int len;
-    	char send_msg[MSG_LEN], command[COM_LEN], password[LEN_20], buf[MSG_LEN];
+    	char command[COM_LEN], password[LEN_20], buf[MSG_LEN];
 	char friend[LEN_20];
 	
     	struct sockaddr_in ServerIp;
@@ -27,10 +27,6 @@ int main(int argc, char *argv[])
 		printf("Connection to socket failed. Try later...\n");
 		return 0;
 	}	
-
-	printf("\nConnection is successful!\n");
-	printf("Welcome to CLI-Chat!\n/help\n");
-	printComands();
 	
 	//stream for receiving messages
 	pthread_create(&recvt, NULL, (void *)recvmg, &sock);
@@ -39,6 +35,9 @@ int main(int argc, char *argv[])
 
 	if (argc < 2)
 	{
+		printf("\nConnection is successful!\n");
+		printf("Welcome to CLI-Chat!\n/help\n");
+		printComands();
 		while(TRUE) 
 		{	
 			fflush(stdout);
@@ -98,7 +97,6 @@ int main(int argc, char *argv[])
 				printf("Enter its unique code: ");
 				scanf("%s", code);
 				strcpy(buf, "friends ");
-
 				strcat(buf, friend);
 				strcat(buf, " ");
 				strcat(buf, code);
@@ -109,34 +107,91 @@ int main(int argc, char *argv[])
 			{
 				printf("Enter nickname: ");
 				scanf("%s", friend);
-				strcpy(buf, "chat ");
-
-		        	strcat(buf, friend);
-				len = send(sock, buf, 100, 0);
-				if(strcmp(buf, "Your friend is not online or you got the name mixed up"))
+				if(!strcmp(friend, nickname)) 
 				{
-					//open new terminal
+					printf("\nYou can't chat with yourself!\n");
+					continue;
 				}
+				strcpy(buf, "chat ");
+		        	strcat(buf, friend);
 				
+				len = send(sock, buf, 100, 0);
+				
+				char *terminal = (char*)malloc((strlen("gnome-terminal --command='./") +
+						 strlen(argv[0]) + strlen(friend) + strlen(nickname) + strlen("  1' &")) * sizeof(char));
+				strcpy(terminal, "gnome-terminal --command='./");
+				strcat(terminal, argv[0]);
+				strcat(terminal, " ");
+				strcat(terminal, nickname);
+				strcat(terminal, " ");
+				strcat(terminal, friend);
+				strcat(terminal, " 1' &");
+				system(terminal);
 				sleep(1);
 			}
-
-			if(len < 0) printf("\nMessage wasn't sent \n");
+			else if(!strcmp(command, "/start"))
+			{
+				printf("Enter nickname: ");
+				scanf("%s", friend);
+				char *terminal = (char*)malloc((strlen("gnome-terminal --command='./") +
+						 strlen(argv[0]) + strlen(friend) + strlen(nickname) + strlen("  2' &")) * sizeof(char));
+				strcpy(terminal, "gnome-terminal --command='./");
+				strcat(terminal, argv[0]);
+				strcat(terminal, " ");
+				strcat(terminal, nickname);
+				strcat(terminal, " ");
+				strcat(terminal, friend);
+				strcat(terminal, " 2' &");
+				system(terminal);
+				
+			} 
+			if(len < 0) printf("\nMessage wasn't sent\n");
 		}
 	}
-	/*
-	else if () 
+	else if (argc == 4) 
 	{
-		
+		char msg[MSG_LEN];
+		printf("            Chat with %s \n", argv[2]);
+		if (atoi(argv[3]) == 1)
+		{
+			printf("Waiting for connection...\n");
+			strcpy(buf, "start ");
+			strcat(buf, argv[1]);
+			strcat(buf, " ");
+			strcat(buf, argv[2]);
+			send(sock, buf, 100, 0);
+		}
+		else if (atoi(argv[3]) == 2) 
+		{
+			strcpy(buf, "proof ");
+			strcat(buf, argv[1]);
+			strcat(buf, " ");
+			strcat(buf, argv[2]);
+			send(sock, buf, 100, 0);
+			strcpy(buf, "mes ");
+			strcat(buf, argv[2]);
+			strcat(buf, ":");
+			strcat(buf, argv[1]);
+			strcat(buf, " ");
+			strcat(buf, argv[1]);
+			strcat(buf, " joined the chat");
+			send(sock, buf, 100, 0);
+			
+		}
+		while(fgets(msg, MSG_LEN, stdin) > 0) 
+		{
+			
+		}
 	}
-	*/
+	
     return 0;
 }
 
 void *recvmg(void *my_sock) 
 {
 	int sock = *((int *)my_sock), len;
-
+	char msg[MSG_LEN];
+	
 	while((len = recv(sock, msg, MSG_LEN, 0)) > 0) 
 	{
 		printf("%s\n", msg);

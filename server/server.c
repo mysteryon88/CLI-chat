@@ -16,7 +16,7 @@ int main(int argc, char *argv[])
 	pthread_t recvt;
 	int Client_sock = 0;
 
-  	//create list of clients
+  	// create list of clients
 	clients_list = create(-1);	
 
 	ServerIp.sin_family = AF_INET;
@@ -36,12 +36,13 @@ int main(int argc, char *argv[])
 		printf("Listening failed!\n");
 		return 0;	
 	}
-	
+
 	connectDatabase(DATABASE);
 	createTableClients();
 	
 	while(TRUE) 
 	{
+		// waiting for connection
 		if((Client_sock = accept(sock, (struct sockaddr *)NULL, NULL)) < 0) 
 			printf("Accept failed\n");
 		else printf("Accept successfully\n");
@@ -75,7 +76,6 @@ void *recvmg(void *client_sock)
 	int len = 0;
 	while((len = recv(sock, msg, MSG_LEN, 0)) > 0) 
 	{
-		//len = recv(sock, msg, MSG_LEN, 0);
 		printf("%s\n", msg);
 		sscanf(msg, "%s", command);
 		
@@ -98,8 +98,7 @@ void *recvmg(void *client_sock)
 			char pass[LEN_20];
 			char *ans;
 			sscanf(msg, "%s%s%s", nickname, nickname, pass);
-			//printf("%s\n", nikname);
-			//printf("%s\n", pass);
+			
 			if(!isExistInClients(nickname))
 			{
 				
@@ -118,7 +117,6 @@ void *recvmg(void *client_sock)
 			else ans = "There is already a user with the same name";
 							
 			send(sock, ans, strlen(ans), 0);
-			//selectAllClients();
 		}	
 		else if(!strcmp(command, "in"))
 		{
@@ -126,8 +124,7 @@ void *recvmg(void *client_sock)
 			char pass[LEN_20];
 			char *ans;
 			sscanf(msg, "%s%s%s", nickname, nickname, pass);
-			//printf("%s\n", nikname);
-			//printf("%s\n", pass);
+
 			if(isExistInClients(nickname))
 			{
 				if (registrationCheck(nickname, pass))
@@ -144,7 +141,7 @@ void *recvmg(void *client_sock)
 			else ans = "Your nickname is not registered";
 					
 			send(sock, ans, strlen(ans), 0);	
-			//selectAllClients();
+
 		}
 		else if(!strcmp(command, "friends"))
 		{
@@ -155,24 +152,26 @@ void *recvmg(void *client_sock)
 			if(strcmp(name, ""))
 			{
 				sscanf(msg, "%s%s%s", nickname, nickname, code);
-				if(isExistInClients(nickname))
-				{
-					pthread_mutex_lock(&database);
-					int exist = isExistFriend(name, nickname);
-					pthread_mutex_unlock(&database);
-					if(!exist)
-						if(atoi(code) == getID(nickname))
-						{
-							pthread_mutex_lock(&database);
-							insertIntoTable(nickname, name);
-							insertIntoTable(name, nickname);
-							pthread_mutex_unlock(&database);
-							ans = "Now you are friends!";
-						}
-						else ans = "Wrong unique code!";
-					else ans = "You are already friends!";
-				}
-				else ans = "Such user doesn't exist!";
+				if(strcmp(name, nickname))
+					if(isExistInClients(nickname))
+					{
+						pthread_mutex_lock(&database);
+						int exist = isExistFriend(name, nickname);
+						pthread_mutex_unlock(&database);
+						if(!exist)
+							if(atoi(code) == getID(nickname))
+							{
+								pthread_mutex_lock(&database);
+								insertIntoTable(nickname, name);
+								insertIntoTable(name, nickname);
+								pthread_mutex_unlock(&database);
+								ans = "Now you are friends!";
+							}
+							else ans = "Wrong unique code!";
+						else ans = "You are already friends!";
+					}
+					else ans = "Such user doesn't exist!";
+				else ans = "You can't add yourself as a friend";
 			}	
 			else ans = "You are not sign in!";
 
@@ -182,7 +181,8 @@ void *recvmg(void *client_sock)
 		{
 			char *ans;
 			char nickname[LEN_20];
-			if(strcmp(find_nickname(sock, clients_list), ""))
+			char *name = find_nickname(sock, clients_list);	
+			if(strcmp(name, ""))
 			{
 				sscanf(msg, "%s%s", nickname, nickname);
 				if(!find_sock(nickname, clients_list))
@@ -198,7 +198,46 @@ void *recvmg(void *client_sock)
 			}
 			
 		}
-		
+		else if(!strcmp(command, "start"))
+		{
+			char nickname_one[LEN_20], nickname_two[LEN_20];
+			char *ans = (char*)malloc((strlen(" wants to start a chat with you, enter \"/start\"") + strlen(nickname_one) + strlen(nickname_one)) * sizeof(char));
+			sscanf(msg, "%s%s%s", nickname_one, nickname_one, nickname_two);
+			
+			//printf("%s\n", nickname_one);
+			//printf("%s\n", nickname_two);			
+				
+			strcpy(ans, nickname_one);
+			strcat(ans, " wants to start a chat with you, enter \"/start\"");
+			
+			//printf("%ld\n", );
+			char *name = (char*)malloc((strlen(nickname_one) + strlen(nickname_two) + strlen(":")) * sizeof(char));
+			strcpy(name, nickname_one);
+			strcat(name, ":");
+			strcat(name, nickname_two);
+			
+			send(find_sock(nickname_two, clients_list), ans, strlen(ans), 0);
+			nickname_change(sock, clients_list, name);
+			
+		}
+		else if(!strcmp(command, "proof"))
+		{	
+			char nickname_one[LEN_20], nickname_two[LEN_20];
+			sscanf(msg, "%s%s%s", nickname_one, nickname_one, nickname_two);
+
+			char *name = (char*)malloc((strlen(nickname_one) + strlen(nickname_two) + strlen(":")) * sizeof(char));
+			strcpy(name, nickname_one);
+			strcat(name, ":");
+			strcat(name, nickname_two);
+			nickname_change(sock, clients_list, name);
+		}
+		else if(!strcmp(command, "mes"))
+		{
+			char name[40];
+			sscanf(msg, "%s%s", name, name);
+			send(find_sock(name, clients_list), msg, strlen(msg), 0);
+		}
+		print_list(clients_list);
 		memset(msg, '\0', MSG_LEN);
 	}
 	clients_list = remove_element(sock, clients_list);
