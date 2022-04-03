@@ -253,7 +253,7 @@ void *recvmg(void *client_sock)
 				printf("%ld\n", send(sock_, mes, strlen(mes), 0));	
 			}
 		}
-		print_list(clients_list);
+		//print_list(clients_list);
 		memset(msg, '\0', MSG_LEN);
 	}
 	clients_list = remove_element(sock, clients_list);
