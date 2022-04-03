@@ -6,6 +6,8 @@ OS: Oracle Linux Server Release 6.10
 
 Library: SQLite
 
+Подробнее о реализации клиента [Client Wiki](https://github.com/mysteryon88/CLI-chat/wiki/Client)
+
 Это мультиклиентный чат на языке С, к которому подлючена база даннных SQLite, через одноименную библиотку. 
 Связь клиента и сервера организована через сокеты. По умолчанию localhost.
 Программый интерфейс представляет из себя Интерфейс командной строки (англ. Command line interface, CLI). 
