@@ -21,21 +21,15 @@ void closeDatabase()
 	sqlite3_close(db);
 }
 
-int connectDatabase(const char *database)
+void connectDatabase(const char *database)
 {
 	if(sqlite3_open(database, &db))
-	{
 		printf("Can't open database: %s\n", sqlite3_errmsg(db));
-		return 1;
-	}
-	else
-	{
-		printf("Connect database successfully\n");
-		return 0;
-	}
+
+	else printf("Connect database successfully\n");
 }
 
-int createTableClients()
+void createTableClients()
 {
 	char *zErrMsg = 0;
 	char *sql;
@@ -49,13 +43,8 @@ int createTableClients()
 	{
 		fprintf(stderr, "SQL error: %s\n", zErrMsg);
 		sqlite3_free(zErrMsg);
-		return 1;
 	}
-	else 
-	{
-		printf("Table Clients created successfully\n");
-		return 0;
-	}
+	else printf("Table Clients created successfully\n");
 
 }
 
