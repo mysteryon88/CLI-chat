@@ -18,7 +18,7 @@ int main(int argc, char *argv[])
 
   	// create list of clients
 	clients_list = create(-1);	
-
+	
 	ServerIp.sin_family = AF_INET;
 	ServerIp.sin_port = htons(PORT);
 	ServerIp.sin_addr.s_addr = inet_addr("127.0.0.1");
@@ -48,23 +48,19 @@ int main(int argc, char *argv[])
 		else printf("Accept successfully\n");
 		
 		add_element_end(Client_sock, clients_list);
-
+		// create a thread for each connection
 		pthread_create(&recvt, NULL,(void *)recvmg, &Client_sock);
 	}
 	return 0; 
 }
 
-void sendtoall(char *msg)
+void sendtoall(const char *msg)
 {
 	list *tmp = clients_list;
 	tmp = tmp->next; 
 	while (tmp != NULL) 
 	{
-		if(send(tmp->value, msg, strlen(msg), 0) < 0) 
-		{
-			printf("Sending failure\n");
-			continue;
-		}
+		if(send(tmp->value, msg, strlen(msg), 0) < 0) continue;
 		tmp = tmp->next;
 	}
 }
@@ -101,7 +97,6 @@ void *recvmg(void *client_sock)
 			
 			if(!isExistInClients(nickname))
 			{
-				
 				pthread_mutex_lock(&database);
 				
 				insertIntoClients(nickname, pass);
@@ -112,7 +107,9 @@ void *recvmg(void *client_sock)
 				ans = (char*)malloc((strlen("You have been registered, your code: ") + strlen(id)) * sizeof(char));
 				strcpy(ans, "You have been registered, your code: ");
 				strcat(ans, id);
-				
+				send(sock, ans, strlen(ans), 0);	
+				free(ans);
+				continue;
 			}
 			else ans = "There is already a user with the same name";
 							
@@ -135,6 +132,9 @@ void *recvmg(void *client_sock)
 					ans = (char*)malloc((strlen("You have successfully signed in, your code: ") + strlen(id)) * sizeof(char));
 					strcpy(ans, "You have successfully signed in, your code: ");
 					strcat(ans, id);
+					send(sock, ans, strlen(ans), 0);	
+					free(ans);
+					continue;
 				}
 				else ans = "Wrong login or password";
 			}
@@ -186,17 +186,13 @@ void *recvmg(void *client_sock)
 			{
 				sscanf(msg, "%s%s", nickname, nickname);
 				if(!find_sock(nickname, clients_list))
-				{
 					ans = "Your friend is not online or you got the name mixed up";
-					send(sock, ans, strlen(ans), 0);
-				}
+
+				else ans = "online";
 			}	
-			else 
-			{
-				ans = "You are not sign in!";
-				send(sock, ans, strlen(ans), 0);
-			}
+			else ans = "You are not sign in!";
 			
+			send(sock, ans, strlen(ans), 0);
 		}
 		else if(!strcmp(command, "start"))
 		{
@@ -218,6 +214,8 @@ void *recvmg(void *client_sock)
 			
 			send(find_sock(nickname_two, clients_list), ans, strlen(ans), 0);
 			nickname_change(sock, clients_list, name);
+			free(ans);
+			free(name);
 			
 		}
 		else if(!strcmp(command, "proof"))
@@ -233,9 +231,27 @@ void *recvmg(void *client_sock)
 		}
 		else if(!strcmp(command, "mes"))
 		{
-			char name[40];
-			sscanf(msg, "%s%s", name, name);
-			send(find_sock(name, clients_list), msg, strlen(msg), 0);
+			char name[41], leave[10];
+			char *mes;
+			
+			sscanf(msg, "%s%s%s%s", name, name, leave, leave);
+			int sock_ = find_sock(name, clients_list);
+			if (!strcmp(leave, "/leave")) 
+			{
+				mes = "Your friend leave the chat enter /dis or ^C";
+				
+				send(sock_, mes, strlen(mes), 0);
+				send(sock_, "Goodbye", strlen("Goodbye"), 0);
+				clients_list = remove_element(sock_, clients_list);
+				close(sock_);
+				break;
+			}
+			else
+			{
+				mes = (char*)malloc((strlen(msg) - strlen("mes  ") - strlen(name)) * sizeof(char));
+				strncpy(mes, msg + strlen("mes  ") + strlen(name), strlen(msg) - strlen("mes  ") - strlen(name));
+				printf("%ld\n", send(sock_, mes, strlen(mes), 0));	
+			}
 		}
 		print_list(clients_list);
 		memset(msg, '\0', MSG_LEN);
@@ -247,8 +263,7 @@ void *recvmg(void *client_sock)
 
 void end(void)
 {
-	char *end = "Server shutdown!";
-	sendtoall(end);
+	sendtoall("Server shutdown!");
 	close(sock);
 	remove_all(clients_list);
 	puts("\nServer shutdown");

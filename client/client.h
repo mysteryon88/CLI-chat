@@ -9,8 +9,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#define PORT      2343
-#define MSG_LEN   100
+#define PORT      2342
+#define MSG_LEN   200
 #define LEN_20    20
 #define COM_LEN	  9
 #define CODE_LEN  5

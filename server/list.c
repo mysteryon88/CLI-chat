@@ -14,7 +14,7 @@ void add_element_end(int data, list *head)
 {
 	list *tmp = (list*)malloc(sizeof(list));
 	tmp->value = data;
-	tmp->nickname = (char*)malloc(20 * sizeof(char)); //name_len=20
+	tmp->nickname = (char*)malloc(20 * sizeof(char)); // name_len=20
 	strcpy(tmp->nickname, "");
 	tmp->next = NULL;
 	list *p = head;

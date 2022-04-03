@@ -16,10 +16,10 @@ sqlite3 *db;
 void closeDatabase();
 void connectDatabase(const char *database); 
 
-int callback(void *NotUsed, int argc, char **argv, char **azColName);
-int friends(void *sock, int argc, char **argv, char **azColName);
 int check(void *ans, int argc, char **argv, char **azColName);
+int friends(void *sock, int argc, char **argv, char **azColName);
 int select_ID(void *data, int argc, char **argv, char **azColName);
+int callback(void *NotUsed, int argc, char **argv, char **azColName);
 
 void createTableClients();
 void createTableFriends(const char *nik);

@@ -69,6 +69,7 @@ void insertIntoClients(const char *nik, const char *pass)
 	else printf("\"%s\" added to \"Clients\" successfully\n", nik);
 
 	createTableFriends(nik);
+	free(sql);
 }
 
 void selectAllClients()
@@ -91,11 +92,11 @@ void createTableFriends(const char *nik)
 	char *zErrMsg = 0;
 	char *sql;
 	
-	sql = (char*)malloc(strlen("CREATE TABLE ") + strlen(nik) + strlen(" (`ID` INTEGER PRIMARY KEY AUTOINCREMENT, `Friends` CHAR(20) NOT NULL)")* sizeof(char));
+	sql = (char*)malloc(strlen("CREATE TABLE `") + strlen(nik) + strlen("` (ID INTEGER PRIMARY KEY AUTOINCREMENT, Friends CHAR(20) NOT NULL)")* sizeof(char));
 	
-	strcpy(sql, "CREATE TABLE ");
+	strcpy(sql, "CREATE TABLE `");
 	strcat(sql, nik);
-	strcat(sql, " (`ID` INTEGER PRIMARY KEY AUTOINCREMENT, `Friends` CHAR(20) NOT NULL)");
+	strcat(sql, "` (ID INTEGER PRIMARY KEY AUTOINCREMENT, Friends CHAR(20) NOT NULL)");
 
 	if(sqlite3_exec(db, sql, callback, 0, &zErrMsg) != SQLITE_OK)
 	{
@@ -103,6 +104,7 @@ void createTableFriends(const char *nik)
 		sqlite3_free(zErrMsg);
 	}
 	else printf("Table \"%s\" created successfully\n", nik);
+	free(sql);
 }
 
 // the function of adding new friends to the table
@@ -124,6 +126,7 @@ void insertIntoTable(const char *table,  const char *nik)
 		sqlite3_free(zErrMsg);
 	}
 	else printf("%s added to \"%s\" (Friends) successfully\n", nik, table);
+	free(sql);
 }
 
 // check if the client exists
@@ -142,6 +145,7 @@ int isExistInClients(const char *nik)
 		sqlite3_free(zErrMsg);
 	}
 	else printf("Operation done successfully\n");
+	free(sql);
 	return exist;	
 }
 
@@ -160,6 +164,7 @@ void selectAllFriends(int *sock, const char *nik)
 		sqlite3_free(zErrMsg);
 	}
 	else printf("Operation done successfully\n");
+	free(sql);
 }
 
 // send friend list feature
@@ -176,6 +181,7 @@ int friends(void *sock, int argc, char **argv, char **azColName)
 	send(*((int*)sock), buf, strlen(buf), 0);
 	
 	printf("\n");
+	free(buf);
 	return 0;
 }
 
@@ -201,7 +207,11 @@ int registrationCheck(const char *nik, const char *pass)
 	char nickname[LEN_20];
 	char password[LEN_20];
 	sscanf(ans, "%s%s", nickname, password);
+	free(sql);
+	free(ans);
+
 	if(!strcmp(nickname, nik) && !strcmp(password, pass)) return 1;
+
 	return 0;
 }
 
@@ -234,6 +244,7 @@ int getID(const char *nik)
 		sqlite3_free(zErrMsg);
 	}
 	else printf("Operation done successfully\n");
+	free(sql);
 	return id;
 }
 	
@@ -267,6 +278,6 @@ int isExistFriend(const char *table, const char *nik)
 		sqlite3_free(zErrMsg);
 	}
 	else printf("Operation done successfully\n");
-
+	free(sql);
 	return exist;	
 }

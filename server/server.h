@@ -9,8 +9,8 @@
 #include "database.h"
 #include "list.h"
 
-#define PORT      2343
-#define MSG_LEN   100
+#define PORT      2342
+#define MSG_LEN   200
 #define COM_LEN	  9
 #define CODE_LEN  5
 #define TRUE      1
@@ -22,7 +22,7 @@ list *clients_list; //list of clients
 int sock = 0;
 
 void end(void);
-void sendtoall(char *msg);
+void sendtoall(const char *msg);
 void signal_INT(int signum);
 void *recvmg(void *client_sock);
 
