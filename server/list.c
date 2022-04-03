@@ -45,7 +45,7 @@ list *remove_element(int data, list *head)
 		p = tmp;
 		tmp = tmp -> next;
 	}
-	// If the item to be removed is the first
+	// if the item to be removed is the first
 	if (tmp == head) 
 	{
 		free(head);

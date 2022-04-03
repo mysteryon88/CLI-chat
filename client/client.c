@@ -10,19 +10,21 @@ int main(int argc, char *argv[])
 		return 0;
 	}
 	
+	// termination signal
 	signal(SIGINT, signal_INT);		
 
 	pthread_t recvt;
-    	int len;
-    	char command[COM_LEN], password[LEN_20], buf[MSG_LEN];
+    int len;
+    char command[COM_LEN], password[LEN_20], buf[MSG_LEN];
 	char friend[LEN_20];
 	
-    	struct sockaddr_in ServerIp;
-
-    	sock = socket(AF_INET, SOCK_STREAM, 0);
+    struct sockaddr_in ServerIp;
+		
+	// create a socket
+    sock = socket(AF_INET, SOCK_STREAM, 0);
    	ServerIp.sin_port = htons(PORT);
   	ServerIp.sin_family= AF_INET;
-	ServerIp.sin_addr.s_addr = inet_addr("127.0.0.1");
+	ServerIp.sin_addr.s_addr = inet_addr("127.0.0.1"); // server address
 	
 	if((connect(sock, (struct sockaddr *)&ServerIp, sizeof(ServerIp))) == -1) 
 	{
@@ -50,6 +52,7 @@ int main(int argc, char *argv[])
 				printAbout(); 
 			else if(!strcmp(command, "/myfriends")) 
 			{
+				// get list of friends
 				len = send(sock, command, strlen(command), 0);
 				sleep(1);
 			}
@@ -60,36 +63,43 @@ int main(int argc, char *argv[])
 			}
 			else if (!strcmp(command, "/dis")) 
 			{
+				// disconnection
 				len = send(sock, command, strlen(command), 0);
 				break;
 			}
+			// registration
 			else if(!strcmp(command, "/up"))
 			{
 				printf("Enter nickname: ");
 				scanf("%s", nickname);
 	 			printf("Enter password: ");
 				scanf("%s", password);
+				
 				strcpy(buf, "up ");
-
-		        	strcat(buf, nickname);
+		        strcat(buf, nickname);
 				strcat(buf, " ");
 				strcat(buf, password);
+				
 				len = send(sock, buf, MSG_LEN, 0);
 				sleep(1);
 			}
+			// authorization
 			else if(!strcmp(command, "/in"))
 			{
 				printf("Enter nickname: ");
 				scanf("%s", nickname);
 	 			printf("Enter password: ");
 				scanf("%s", password);
+				
 				strcpy(buf, "in ");
 				strcat(buf, nickname);
 				strcat(buf, " ");
 				strcat(buf, password);
+				
 				len = send(sock, buf, MSG_LEN, 0);
 				sleep(1);
 			}
+			// adding to friends
 			else if(!strcmp(command, "/friends"))
 			{
 				char code[CODE_LEN];
@@ -97,13 +107,16 @@ int main(int argc, char *argv[])
 				scanf("%s", friend);
 				printf("Enter its unique code: ");
 				scanf("%s", code);
+				
 				strcpy(buf, "friends ");
 				strcat(buf, friend);
 				strcat(buf, " ");
 				strcat(buf, code);
+				
 				len = send(sock, buf, MSG_LEN, 0);
 				sleep(1);
 			}
+			// chat initiation
 			else if(!strcmp(command, "/chat")) 
 			{
 				printf("Enter nickname: ");
@@ -113,15 +126,17 @@ int main(int argc, char *argv[])
 					printf("\nYou can't chat with yourself!\n");
 					continue;
 				}
+				// online check
 				strcpy(buf, "chat ");
-		        	strcat(buf, friend);
+		        strcat(buf, friend);
 				
 				len = send(sock, buf, MSG_LEN, 0);
 				sleep(1);
 				if (online == 1)
 				{
+					// open new terminal
 					char *terminal = (char*)malloc((strlen("gnome-terminal --command='./") +
-							 strlen(argv[0]) + strlen(friend) + strlen(nickname) + strlen("  1' &")) * sizeof(char));
+							strlen(argv[0]) + strlen(friend) + strlen(nickname) + strlen("  1' &")) * sizeof(char));
 					strcpy(terminal, "gnome-terminal --command='./");
 					strcat(terminal, argv[0]);
 					strcat(terminal, " ");
@@ -133,12 +148,13 @@ int main(int argc, char *argv[])
 					free(terminal);
 				}				
 			}
+			// connection to the created chat
 			else if(!strcmp(command, "/start"))
 			{
 				printf("Enter nickname: ");
 				scanf("%s", friend);
 				char *terminal = (char*)malloc((strlen("gnome-terminal --command='./") +
-						 strlen(argv[0]) + strlen(friend) + strlen(nickname) + strlen("  2' &")) * sizeof(char));
+						strlen(argv[0]) + strlen(friend) + strlen(nickname) + strlen("  2' &")) * sizeof(char));
 				strcpy(terminal, "gnome-terminal --command='./");
 				strcat(terminal, argv[0]);
 				strcat(terminal, " ");
@@ -170,6 +186,7 @@ int main(int argc, char *argv[])
 			strcat(buf, argv[2]);
 			send(sock, buf, MSG_LEN, 0);
 		}
+		// connection to the created chat
 		else if (atoi(argv[3]) == 2) 
 		{
 			strcpy(buf, "proof ");
