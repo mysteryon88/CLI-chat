@@ -40,7 +40,7 @@ int main(int argc, char *argv[])
 	}
 
 	if (connectDatabase(DATABASE)) return 0;
-	if (createTableClients()) return 0;	
+	createTableClients()
 	
 	while(TRUE) 
 	{
